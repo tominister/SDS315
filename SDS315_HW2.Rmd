@@ -1,6 +1,6 @@
 ---
 title: "SDS315_HW2"
-author: "Tommy Fang EID: hf5829 Repo: "
+author: "Tommy Fang EID: hf5829 Repo: https://github.com/tominister/SDS315"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
