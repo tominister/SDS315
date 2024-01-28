@@ -1,0 +1,141 @@
+---
+title: "SDS315_HW2"
+author: "Tommy Fang EID: hf5829 Repo: "
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=F, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+profs <- read.csv("profs.csv")
+bikes <- read.csv("bikeshare.csv")
+metro <- read.csv("capmetro_UT.csv")
+billboard <- read.csv("billboard.csv")
+```
+
+## Problem 1
+#### Part A
+```{r, echo=F, warning=F, message=F}
+ggplot(profs)+geom_histogram(aes(x=eval))+labs(title="Histogram for Average Teaching Evaluation Score", x="Evaluation Score")
+```
+The mean average evaluation score is around `r round(mean(profs$eval),2)` and the standard deviation is around `r round(sd(profs$eval),2)`. The histogram is also skewed to the left. In context of course evaluations, it seems that most evaluations were pretty high (4 or above) and very few if any are below 2.  
+
+#### Part B
+```{r, echo=F, warning=F}
+ggplot(profs)+geom_boxplot(aes(x=eval,y=native))+labs(title="Average Teaching Evaluation Score Based on Native English Speaker", x="Evaluation Score", y="Native English Speaker")+coord_flip()
+```
+
+#### Five number summary for native english speakers:
+```{r, echo=F, warning=F, message=F}
+is_native <- filter(profs, native=="yes")
+fivenum(is_native$eval)
+```
+#### Five number summary for non-native english speakers:
+```{r, echo=F, warning=F, message=F}
+not_native <- filter(profs, native=="no")
+fivenum(not_native$eval)
+```
+The median evaluation score for teachers who are native english speakers is around 4, with a lower quartile of around 3.7 and an upper quartile of around 4.4. The median evaluation score for teachers who are non-native english speakers is around 3.6, with a lower quartile of around 3.3 and an upper quartile of around 4. From the boxplot, it can be seen that native english speakers generally have a higher evaluation score compared to non-native speakers. It can also be noted that there are a few outliers on the low end for native speakers as well. 
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+ggplot(profs)+geom_histogram(aes(x=eval))+labs(title="Histogram for Average Teaching Evaluation Score by Gender", x="Evaluation Score")+facet_wrap(~gender, nrow=2)
+
+byGender <- group_by(profs, gender)
+summarize(byGender, mean=round(mean(eval,na.rm=T),2),sd=round(sd(eval,na.rm=T),2))
+```
+For females, the mean course evaluation score is around 3.9 with a standard deviation of around 0.54. For males, the mean course evaluation score is around 4.07 with a standard deviation of around 0.56. Following these statistics, the histogram also shows that males have slightly better ratings compared to females although insignificant. There are also a few outliers for both genders, but the standard deviations are fairly equivalent. 
+
+#### Part D
+```{r, echo=F, warning=F, message=F}
+ggplot(profs)+geom_point(aes(x=beauty, y=eval))+labs(title="Histogram for Professor Attractiveness and Average Teaching Evaluation Score", x="Beauty Score", y="Evaluation Score")
+```
+The correlation between beauty score and evaluation score is `r round(cor(profs$beauty, profs$eval),2)`. This is a very weak correlation between the two variables. Possible explanations are that students care more about grades, speaking, and the overall personality of the teacher rather than how they look. These are not necessarily proven causes for the correlation but can theoretically be important factors in students' decisions. 
+
+## Problem 2
+#### Part A
+```{r, echo=F, warning=F, message=F}
+byHour <- group_by(bikes, hr)
+avgRentals <- summarize(byHour, meanRentals = mean(total,na.rm=T))
+ggplot(avgRentals)+geom_line(aes(x=hr,y=meanRentals))+labs(title="Line Graph for Average Rentals Across Hours of Day",x="Hour", y="Average Rentals")
+```
+The x-axis represents the hour of day starting from midnight and the y-axis is the average number of rentals during that hour taken across multiple days. As seen in the graph, average rentals spike around hours 7 to 8 and hours 16-17. One possible explanation is that these are usually the times where people get on and off from their jobs in the morning and afternoon respectively. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+label <- as_labeller(c(`1` = "Working Day", `0` = "Not Working Day"))
+bikes %>%
+  group_by(hr,workingday) %>%
+  summarize(rentalsbyWorkingDay = mean(total,na.rm=T)) %>%
+  ggplot()+geom_line(aes(x=hr,y=rentalsbyWorkingDay))+labs(title="Line Graph for Average Rentals Across Hours of Day by Working Day",x="Hour", y="Average Rentals")+facet_wrap(~workingday,labeller=label)
+```
+The x-axis represents the hour of day starting from midnight and the y-axis is the average number of rentals during that hour taken across multiple days. The distinction of these graphs from the grpah above is that they are separated by whether the day is a working day or not. The graph on the right follows the conclusions observed from part A. However, the graph on the left shows that average rentals rose after hour 5 and declined after hours 13 to 14. One possible explanation is that people might want to go outside during noon to eat out or have some recreation. 
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+label <- as_labeller(c(`1` = "Working Day", `0` = "Not Working Day"))
+bikes %>%
+  filter(hr==9)%>%
+  group_by(weathersit,workingday)%>%
+  summarize(weathersitRentals=mean(total,na.rm=T))%>%
+  ggplot()+geom_col(aes(x=weathersit,y=weathersitRentals))+labs(title="Line Graph for Average Rentals Across Weather Types by Working Day",x="Weather Type", y="Average Rentals")+facet_wrap(~workingday,labeller=label)
+```
+Since it is not clear on the graph, the x-axis shows the variable weather type, with 1 being the "best" weather (clear with no clouds) to 4 being the "worst" weather (heavy rain and thunder). The y-axis still shows the average number of bike rentals. Both graphs show that the number of rentals goes down the worse the weather gets whether it was a working day or not. Thus, it can be inferred that fewer and fewer people want to go outside as the weather gets worse. 
+
+## Problem 3
+#### Part A
+```{r, echo=F, warning=F, message=F}
+metro = mutate(metro, day_of_week=factor(day_of_week, levels=c("Mon", "Tue", "Wed","Thu", "Fri", "Sat", "Sun")),
+month = factor(month,levels=c("Sep", "Oct","Nov")))
+metro%>%
+  group_by(day_of_week, hour_of_day, month)%>%
+  summarize(meanBoardings=mean(boarding,na.rm=T))%>%
+  ggplot()+geom_line(aes(x=hour_of_day,y=meanBoardings,col=month))+labs(title="Average Boardings per Hour by Day of Week Across Three Months",x="Hour",y="Average Boardings")+facet_wrap(~day_of_week)
+```
+The figure above shows seven line graphs separated by day of week, each displaying the average boarding by hour across three months separated by color. As seen in the graphs, the peak hour for boarding across weekdays (Monday to Friday) is around the same, being sometime in the afternoon. However, the average boarding is constantly low across the weekend. Regarding the visibly lower boarding on September Mondays, one possible explanation is that people have a day off due to Labor Day holiday. Similarly, Thanksgiving holiday could account for the lower average boarding on Wednesday, Thursday, and Friday in November. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+metro%>%
+  ggplot()+geom_point(aes(x=temperature,y=boarding,col=weekend))+labs(title="Scatterplot for Temperature of Boarding",x="Temperature",y="Boarding")+ facet_wrap(~hour_of_day)
+```
+The figure above shows scatterplots plotting number of boards vs. temperature across hours of the day. Points are separated by color based on whether or not it is a weekday or weekend. Based on all graphs, it can be noted that temperature does not have a significant effect on how many people board. This is because as the temperature (x-axis) gets higher or lower, the number of boards stays relatively constant. 
+
+## Problem 4
+#### Part A
+```{r, echo=F, warning=F, message=F}
+billboard%>%
+  group_by(performer,song)%>%
+  summarize(count=length(song))%>%
+  arrange(desc(count))%>%
+  head(10)
+```
+The table shows the top 10 most popular songs in descending order. The name of the singer, the name of the song, and how many weeks the song appeared on the Billboard Top 100 are provided, with the last column determining the song's popularity. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+billboard%>%
+  filter(year!=1958&year!=2021)%>%
+  group_by(year)%>%
+  summarize(uniqueSongs=length(unique(song)))%>%
+  ggplot()+geom_line(aes(x=year,y=uniqueSongs))+labs(title="Line Graph for Unique Songs Across Year",x="Year",y="Unique Songs")
+```
+The line graph shows the trend of number of unique songs across 1959 to 2020. One interest trend is that music diversity (unique songs) seems to decline after around 1970, reaches a low around 2000, then starts increasing after. 
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+billboard%>%
+  group_by(performer, song) %>%
+  summarise(count = length(song))%>%
+  filter(count >=10) %>%
+  group_by(performer) %>%
+  summarise(songs = length(performer)) %>%
+  filter(songs>= 30)%>%
+  ggplot() + geom_col(aes(x = performer, y = songs)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = rel(1)))+labs(title="Bar Plot of Singers with More Than 30 10-week Hits",x="Performer",y="10-week Hits")
+```
+The bar plot shows the names of singers with at least 30 10-week hits and exactly how many hits they had in total. A noticeable aspect is that Elton John had the most 10-week hits. 
+
+
+
