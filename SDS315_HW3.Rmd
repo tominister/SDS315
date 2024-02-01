@@ -74,18 +74,18 @@ Since JNJ has the lowest absolute slope of around 23.197, it has the lowest syst
 Italy <- filter(covid,country=="Italy")
 ItalyModel <- lm(log(deaths)~days_since_first_death, data=Italy)
 coef(ItalyModel)
-70/coef(ItalyModel)[2]
+70/coef(ItalyModel)[2]/100
 ```
-The growth rate for number of deaths is around 18.322%. The doubling time is around 382 days.
+The growth rate for number of deaths is around 18.322%. The doubling time is around 4 days.
 
 #### Part B
 ```{r, echo=F, warning=F, message=F}
 Spain <- filter(covid,country=="Spain")
 SpainModel <- lm(log(deaths)~days_since_first_death, data=Spain)
 coef(SpainModel)
-70/coef(SpainModel)[2]
+70/coef(SpainModel)[2]/100
 ```
-The growth rate for number of deaths is around 27.624%. The doubling time is around 253 days.
+The growth rate for number of deaths is around 27.624%. The doubling time is around 3 days.
 
 #### Part C
 ```{r, echo=F, warning=F, message=F}
