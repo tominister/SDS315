@@ -1,0 +1,111 @@
+---
+title: "SDS315_HW3"
+author: "Tommy Fang EID: hf5829 Repo: https://github.com/tominister/SDS315"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(minpack.lm)
+creatine <- read.csv("creatinine.csv")
+market <- read.csv("marketmodel.csv")
+covid <- read.csv("covid.csv")
+milk <- read.csv("milk.csv")
+```
+
+## Problem 1
+#### Part A
+```{r, echo=F, warning=F, message=F}
+creatineModel <- lm(creatclear~age, data=creatine)
+-0.620*55+147.813
+```
+We first create a linear regression equation based on the creatine data obtained. Rounding three decimals, the equation y = -0.620*x+147.813 where x is the age of the patient gives an expected creatine clearance rate of around 113.713 mL/min for a 55 year old.
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+coef(creatineModel)
+```
+The values above are obtained from the equation of the linear regression equation described in part A. -0.620 is the rate at which creatine clearance rate changes with age. Thus, it can be said that for every increment of 1 in age, creatine clearance rate decreases by 0.620.
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+135-(-0.620*55+147.813)
+112-(0.620*55+147.813)
+```
+The 40 year old has a healthier creatine clearance rate compared to the 60 year old. Using the linear regression equation in part A, we subtract the rates for each patient from their predicted rate from the equation to obtain the residuals. Since 21.287 is greater tan -69.913, the 40 year old has a healthier rate. 
+
+## Problem 2
+#### Part A
+The beta of a stock can be thought of as its vulnerability to changes in the stock market as a whole. More specifically, stocks with a higher beta value are more susceptible to changes in value and therefore are more risky to hold. Stocks with a smaller beta value tend to be from companies that are larger and more stable. Smaller companies have more risks and may be outcompeted by larger companies. This can lead to greater fluctuations in their stock prices compared and therefore lead to instability. Larger companies won’t see drastic changes in prices due to the fact that they are well established and buying or selling a few stocks won’t change the price significantly. They are also less vulnerable to changes such as a stock market crash. Furthermore, companies that have high demand also tend to have smaller beta values. Following the example provided in the video, groceries are a very valuable necessity in peoples’ daily lives. Despite a stock market crash, people still need to eat in order to survive, meaning that they still have to buy from a grocery store such as Walmart. Therefore, Walmart’s beta value is lower compared to other companies such Apple, where buying a new phone isn’t as important as food. Connecting to the regression equation, beta represents the slope since it is a rate at which the stock’s value will change in relation to the market. Since X is the market’s rate of return, it makes sense that the slope provides a direct relationship between X and the rate of return for the individual stock. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+market$Date <- as.Date(market$Date, '%Y-%m-%d')
+SPYModel <- lm(SPY~Date, data=market)
+AAPLModel <- lm(AAPL~Date, data=market)
+GOOGModel <- lm(GOOG~Date, data=market)
+MRKModel <- lm(MRK~Date, data=market)
+JNJModel <- lm(JNJ~Date, data=market)
+WMTModel <- lm(WMT~Date, data=market)
+TGTModel <- lm(TGT~Date, data=market)
+
+marketTibble <- tibble()
+marketTibble <- rbind(marketTibble,tibble(Symbol="SPYModel", Intercept=coef(SPYModel)[1], Slope=coef(SPYModel)[2], Rsquared=cor(as.numeric(market$Date),market$SPY)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="AAPLModel", Intercept=coef(AAPLModel)[1], Slope=coef(AAPLModel)[2], Rsquared=cor(as.numeric(market$Date),market$AAPL)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="GOOGModel", Intercept=coef(GOOGModel)[1], Slope=coef(GOOGModel)[2], Rsquared=cor(as.numeric(market$Date),market$GOOG)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="MRKModel", Intercept=coef(MRKModel)[1], Slope=coef(MRKModel)[2], Rsquared=cor(as.numeric(market$Date),market$MRK)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="JNJModel", Intercept=coef(JNJModel)[1], Slope=coef(JNJModel)[2], Rsquared=cor(as.numeric(market$Date),market$JNJ)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="WMTModel", Intercept=coef(WMTModel)[1], Slope=coef(WMTModel)[2], Rsquared=cor(as.numeric(market$Date),market$WMT)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="TGTModel", Intercept=coef(TGTModel)[1], Slope=coef(TGTModel)[2], Rsquared=cor(as.numeric(market$Date),market$TGT)))
+marketTibble
+```
+
+The table includes a regression equation for each of the 7 stocks along with their respective R-squared values. It can be seen that the R-squared values are really small.
+
+#### Part C
+Since JNJ has the lowest absolute slope of around 23.197, it has the lowest systematic risk. MRK has the highest absolute slope of 97.730 and has the highest systematic risk. 
+
+## Problem 3
+#### Part A
+```{r, echo=F, warning=F, message=F}
+Italy <- filter(covid,country=="Italy")
+ItalyModel <- lm(log(deaths)~days_since_first_death, data=Italy)
+coef(ItalyModel)
+70/coef(ItalyModel)[2]
+```
+The growth rate for number of deaths is around 18.322%. The doubling time is around 382 days.
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+Spain <- filter(covid,country=="Spain")
+SpainModel <- lm(log(deaths)~days_since_first_death, data=Spain)
+coef(SpainModel)
+70/coef(SpainModel)[2]
+```
+The growth rate for number of deaths is around 27.624%. The doubling time is around 253 days.
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+ggplot(covid)+geom_line(aes(x=days_since_first_death,y=deaths,col=country))+labs(title="Line Graph for Number of Deaths by Day Across Country",x="Days Since First Death", y="Deaths")
+```
+The line graph supports the calculations shown in parts A and B. It can be seen that Spain has a higher growth rate due to there being a greater slope compared to Italy. 
+
+## Problem 4
+#### Part A
+```{r, echo=F, warning=F, message=F}
+milkModel <- lm(log(sales)~log(price), data=milk)
+coef(milkModel)
+```
+By taking the log of both sales and price and then using the linear regression equation, the estimated price elasticity is around -1.619. Thus, the percentage of sales changes by -1.619% for each 1% change in price. 
+
+
+
+
+
+
+
+
+
