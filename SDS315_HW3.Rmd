@@ -32,8 +32,8 @@ The values above are obtained from the equation of the linear regression equatio
 
 #### Part C
 ```{r, echo=F, warning=F, message=F}
-135-(-0.620*55+147.813)
-112-(0.620*55+147.813)
+135-(-0.620*40+147.813)
+112-(-0.620*60+147.813)
 ```
 The 40 year old has a healthier creatine clearance rate compared to the 60 year old. Using the linear regression equation in part A, we subtract the rates for each patient from their predicted rate from the equation to obtain the residuals. Since 21.287 is greater tan -69.913, the 40 year old has a healthier rate. 
 
