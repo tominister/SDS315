@@ -43,23 +43,20 @@ The beta of a stock can be thought of as its vulnerability to changes in the sto
 
 #### Part B
 ```{r, echo=F, warning=F, message=F}
-market$Date <- as.Date(market$Date, '%Y-%m-%d')
-SPYModel <- lm(SPY~Date, data=market)
-AAPLModel <- lm(AAPL~Date, data=market)
-GOOGModel <- lm(GOOG~Date, data=market)
-MRKModel <- lm(MRK~Date, data=market)
-JNJModel <- lm(JNJ~Date, data=market)
-WMTModel <- lm(WMT~Date, data=market)
-TGTModel <- lm(TGT~Date, data=market)
+AAPLModel <- lm(AAPL~SPY, data=market)
+GOOGModel <- lm(GOOG~SPY, data=market)
+MRKModel <- lm(MRK~SPY, data=market)
+JNJModel <- lm(JNJ~SPY, data=market)
+WMTModel <- lm(WMT~SPY, data=market)
+TGTModel <- lm(TGT~SPY, data=market)
 
 marketTibble <- tibble()
-marketTibble <- rbind(marketTibble,tibble(Symbol="SPYModel", Intercept=coef(SPYModel)[1], Slope=coef(SPYModel)[2], Rsquared=cor(as.numeric(market$Date),market$SPY)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="AAPLModel", Intercept=coef(AAPLModel)[1], Slope=coef(AAPLModel)[2], Rsquared=cor(as.numeric(market$Date),market$AAPL)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="GOOGModel", Intercept=coef(GOOGModel)[1], Slope=coef(GOOGModel)[2], Rsquared=cor(as.numeric(market$Date),market$GOOG)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="MRKModel", Intercept=coef(MRKModel)[1], Slope=coef(MRKModel)[2], Rsquared=cor(as.numeric(market$Date),market$MRK)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="JNJModel", Intercept=coef(JNJModel)[1], Slope=coef(JNJModel)[2], Rsquared=cor(as.numeric(market$Date),market$JNJ)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="WMTModel", Intercept=coef(WMTModel)[1], Slope=coef(WMTModel)[2], Rsquared=cor(as.numeric(market$Date),market$WMT)))
-marketTibble <- rbind(marketTibble,tibble(Symbol="TGTModel", Intercept=coef(TGTModel)[1], Slope=coef(TGTModel)[2], Rsquared=cor(as.numeric(market$Date),market$TGT)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="AAPLModel", Intercept=coef(AAPLModel)[1], Slope=coef(AAPLModel)[2], Rsquared=cor(market$SPY,market$AAPL)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="GOOGModel", Intercept=coef(GOOGModel)[1], Slope=coef(GOOGModel)[2], Rsquared=cor(market$SPY,market$GOOG)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="MRKModel", Intercept=coef(MRKModel)[1], Slope=coef(MRKModel)[2], Rsquared=cor(market$SPY,market$MRK)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="JNJModel", Intercept=coef(JNJModel)[1], Slope=coef(JNJModel)[2], Rsquared=cor(market$SPY,market$JNJ)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="WMTModel", Intercept=coef(WMTModel)[1], Slope=coef(WMTModel)[2], Rsquared=cor(market$SPY,market$WMT)))
+marketTibble <- rbind(marketTibble,tibble(Symbol="TGTModel", Intercept=coef(TGTModel)[1], Slope=coef(TGTModel)[2], Rsquared=cor(market$SPY,market$TGT)))
 marketTibble
 ```
 
