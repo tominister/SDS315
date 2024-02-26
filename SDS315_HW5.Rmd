@@ -20,7 +20,7 @@ ggplot(sim_trade)+geom_histogram((aes(x=nflip)))+labs(title="Histogram for Numbe
 p=sum(sim_trade >= 70)/100000
 p
 ```
-The null hypothesis is given that there is a 2.4% chance that a legal trade will get flagged, Iron Bank will experience the same rate of flagged trades. Assuming this is true, we will find the p-value to provide evidence on whether or not 70 flags is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that 70 flags is statistically significant evidence for suspicious activity, specifically, Iron Bank is not experiencing the same rate of flagged trades. 
+The null hypothesis is given that there is a 2.4% chance that a legal trade will get flagged, Iron Bank will experience the same rate of flagged trades. Assuming this is true, we will find the p-value to provide evidence on whether or not 70 flags is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that 70 flags is statistically significant evidence for suspicious activity, specifically, Iron Bank is not experiencing the same rate of flagged trades. Thus, we reject the null hypothesis. 
 
 ## Problem 2
 ```{r, echo=F, warning=F, message=F}
@@ -29,7 +29,7 @@ ggplot(sim_inspect)+geom_histogram((aes(x=nflip)))+labs(title="Histogram for Num
 p=sum(sim_inspect >= 8)/100000
 p
 ```
-The null hypothesis is given that there is a 3% chance that there is a health code violation across the restaurant inspections, Gourmet Bites experiences the same rate of reported code violations as other restaurants. Assuming this is true, we will find the p-value to provide evidence on whether or not 8 health code violations is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that Gourmet Bites is most likely not experiencing the same rate of reported health code violations. 
+The null hypothesis is given that there is a 3% chance that there is a health code violation across the restaurant inspections, Gourmet Bites experiences the same rate of reported code violations as other restaurants. Assuming this is true, we will find the p-value to provide evidence on whether or not 8 health code violations is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that Gourmet Bites is most likely not experiencing the same rate of reported health code violations. Thus, we reject the null hypothesis. 
 
 ## Problem 3
 #### Part A
