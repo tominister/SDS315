@@ -1,0 +1,118 @@
+---
+title: "SDS 315 Homework 5"
+author: "Tommy Fang EID: hf5829 Repo: https://github.com/tominister/SDS315"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE,, message=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(minpack.lm)
+library(mosaic)
+```
+
+## Problem 1
+```{r, echo=F, warning=F, message=F}
+sim_trade=do(100000)*nflip(n=2021, prob=.024)
+ggplot(sim_trade)+geom_histogram((aes(x=nflip)))+labs(title="Histogram for Number of Suspicious Trades", x="Number of Suspicious Trades")
+p=sum(sim_trade >= 70)/100000
+p
+```
+The null hypothesis is given that there is a 2.4% chance that a legal trade will get flagged, Iron Bank will experience the same rate of flagged trades. Assuming this is true, we will find the p-value to provide evidence on whether or not 70 flags is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that 70 flags is statistically significant evidence for suspicious activity, specifically, Iron Bank is not experiencing the same rate of flagged trades. 
+
+## Problem 2
+```{r, echo=F, warning=F, message=F}
+sim_inspect=do(100000)*nflip(n=50, prob=.03)
+ggplot(sim_inspect)+geom_histogram((aes(x=nflip)))+labs(title="Histogram for Number of Health Code Violation Reports", x="Number of Health Code Violation Reports")
+p=sum(sim_inspect >= 8)/100000
+p
+```
+The null hypothesis is given that there is a 3% chance that there is a health code violation across the restaurant inspections, Gourmet Bites experiences the same rate of reported code violations as other restaurants. Assuming this is true, we will find the p-value to provide evidence on whether or not 8 health code violations is statistically significant. The p-value obtained was `r p`, and since it is less than 0.05, we can conclude that Gourmet Bites is most likely not experiencing the same rate of reported health code violations. 
+
+## Problem 3
+#### Part A
+```{r, echo=F, warning=F, message=F}
+letter=read.csv("letter_frequencies.csv")
+brown=readLines("brown_sentences.txt")
+clean <- gsub("[^[:alnum:] ]", "", brown)
+clean<-gsub(" ", "", clean)
+clean <- toupper((clean))
+
+count1 <- c()
+for(i in 1:length(clean)){
+  count1[[i]] <- table(factor(unlist(strsplit(clean[i], ""), use.names=FALSE), levels=letter$Letter))
+}
+actual <- as.data.frame(do.call(rbind, count1))
+count2 <- c()
+for (i in 1:length(clean)){
+   count2[[i]] <- letter$Probability * nchar(clean[i])
+}
+expected <- as.data.frame(do.call(rbind, count2))
+
+chi <- rowSums((expected-actual)^2/ expected)
+head(chi,5)
+```
+Above are a few chi statistics collected. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+sentences <- c(
+  "She opened the book and started to read the first chapter, eagerly anticipating what might come next.",
+  "Despite the heavy rain, they decided to go for a long walk in the park, crossing the main avenue by the fountain in the center.",
+  "The museum’s new exhibit features ancient artifacts from various civilizations around the world.",
+  "He carefully examined the document, looking for any clues that might help solve the mystery.",
+  "The students gathered in the auditorium to listen to the guest speaker’s inspiring lecture.",
+  "Feeling vexed after an arduous and zany day at work, she hoped for a peaceful and quiet evening at home, cozying up after a quick dinner with some TV, or maybe a book on her upcoming visit to Auckland.",
+  "The chef demonstrated how to prepare a delicious meal using only locally sourced ingredients, focusing mainly on some excellent dinner recipes from Spain.",
+  "They watched the sunset from the hilltop, marveling at the beautiful array of colors in the sky.",
+  "The committee reviewed the proposal and provided many points of useful feedback to improve the project’s effectiveness.",
+  "Despite the challenges faced during the project, the team worked tirelessly to ensure its successful completion, resulting in a product that exceeded everyone’s expectations."
+)
+Cleansentences <- gsub("[^[:alnum:] ]", "", sentences)
+Cleansentences<-gsub(" ", "", sentences)
+Cleansentences <- toupper((Cleansentences))
+
+count3 <- c()
+for(i in 1:length(Cleansentences)){
+  count3[[i]] <- table(factor(unlist(strsplit(Cleansentences[i], ""), use.names=FALSE), levels=letter$Letter))
+}
+actualCount <- as.data.frame(do.call(rbind, count3))
+count4 <- c()
+for (i in 1:length(Cleansentences)){
+   count4[[i]] <- letter$Probability * nchar(Cleansentences[i])
+}
+expectedCount <- as.data.frame(do.call(rbind, count4))
+
+chiSentences <- rowSums((expectedCount - actualCount)^2/ expectedCount)
+pvalues <- c()
+for (i in 1:length(Cleansentences)){
+  pvalues[[i]] <- sum(chi >= chiSentences[i])/length(chi)
+}
+for (i in 1:length(pvalues)){
+  print(round(as.numeric(pvalues[i]),3))
+}
+```
+Since sentence 6 has a significantly lower p-value compared to the rest and is also much less than 0.05, it can be seen that it is the AI generated sentence using chi-squared and p-values. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
