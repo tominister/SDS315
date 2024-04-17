@@ -11,27 +11,44 @@ library(tidyverse)
 library(ggplot2)
 library(MatchIt)
 library(mosaic)
+library(kableExtra)
 vote=read.csv("turnout.csv")
 solder=read.csv("solder.csv")
 ```
 
 ## Problem 1
-#### Part A
+### Part A
 ```{r, echo=F, warning=F, message=F}
 prop(voted1998~GOTV_call, data=vote)
-vote_boot=do(1000)*diffprop(voted1998~GOTV_call, data=mosaic::resample(vote,replace=T))
-ggplot(data=vote_boot)+geom_histogram(aes(x=diffprop))+labs(title="Histogram for Difference in Proportions for Voters in 1998 with and without the GOTV Call", x="Difference in Proportions")
-confint(vote_boot, level=0.95)
+conf=prop.test(voted1998 ~ GOTV_call, data = vote)
+conf
 ```
+The proportion of people who voted in 1998 without the GOTV call is around 0.444 while the proportion who voted with the call is 0.648. The difference in proportions in this sample is around 0.204, meaning they are 20.4% more likely to vote given the call. Using a large sample proportion test, it can be said with 95% confidence that the actual difference in proportions between these two populations is between 0.141 and 0.266.
 
-
-#### Part B
-```{r, echo=F, warning=F, message=F}
-vote_model=lm(voted1998~voted1996+AGE+MAJORPTY, data=vote)
-confint(vote_model, level=0.95)
+### Part B
+```{r, echo=F, warning=F, message=F, fig.width=3, fig.height=2}
+ggplot(vote) + geom_boxplot(aes(x = factor(GOTV_call), y = AGE))+labs(title="Age and GOTV Call", x="GOTV Call",y="Age")
+ggplot(vote) + geom_boxplot(aes(x = factor(voted1998), y = AGE))+labs(title="Age and Voted 1998", x="Voted 1998",y="Age")
+turnout_party = vote %>%
+  group_by(GOTV_call) %>%
+  summarize(mean_party = mean(MAJORPTY))
+turnout_party2 = vote %>%
+  group_by(voted1998) %>%
+  summarize(mean_party2 = mean(MAJORPTY))
+ggplot(turnout_party) + geom_col(aes(x = factor(GOTV_call), y = mean_party))+labs(title="Major Party and GOTV Call", x="GOTV Call",y="Major Party")
+ggplot(turnout_party2) + geom_col(aes(x = factor(voted1998), y = mean_party2))+labs(title="Major Party and Voted 1998", x="Voted 1998",y="Major Party")
+turnout_1996 = vote %>%
+  group_by(GOTV_call) %>%
+  summarize(mean_1996 = mean(voted1996))
+turnout_1996_2 = vote %>%
+  group_by(voted1998) %>%
+  summarize(mean_1996_2 = mean(voted1996))
+ggplot(turnout_1996) + geom_col(aes(x = factor(GOTV_call), y = mean_1996))+labs(title="Voted 1996 and GOTV Call", x="GOTV Call",y="Voted 1996")
+ggplot(turnout_1996_2) + geom_col(aes(x = factor(voted1998), y = mean_1996_2))+labs(title="Voted 1996 and Voted 1998", x="Voted 1998",y="Voted 1996")
 ```
+Looking at the three pairs of graphs, it can be seen that they mean and proportions respectively are visibly different. Since the three variables affect both GOTV call and voted1998, they are all confounders.  
 
-#### Part C
+### Part C
 ```{r, echo=F, warning=F, message=F}
 vote_match = matchit(GOTV_call ~ voted1996+AGE + MAJORPTY, data = vote, ratio=5)
 vote_matched = match.data(vote_match)
@@ -40,30 +57,52 @@ mean(AGE~GOTV_call, data=vote_matched)
 prop(MAJORPTY~GOTV_call, data=vote_matched)
 
 prop(voted1998~GOTV_call, data=vote_matched)
-vote_matched_boot=do(1000)*diffprop(voted1998~GOTV_call, data=mosaic::resample(vote_matched,replace=T))
-ggplot(data=vote_matched_boot)+geom_histogram(aes(x=diffprop))+labs(title="Histogram for Difference in Proportions for Voters in 1998 with and without the GOTV Call with Matching", x="Difference in Proportions")
-confint(vote_matched_boot, level=0.95)
+conf=prop.test(voted1998 ~ GOTV_call, data = vote_matched)
+conf
 ```
+After matching the dataset, it can be seen from the first three outputs that the statistics with and without the confounding variables are very similar, meaning that data is much more balanced. With matching, the proportion of people who voted in 1998 without the GOTV call is around 0.574 while the proportion who voted with the call is 0.648. The difference in proportions in this matched sample is 0.074. Using a large sample proportion test, it can be said with 95% confidence that the actual difference in proportions between the matched populations is between 0.006 and 0.142. Since the p-value is 0.038 and is less than 0.05, it is statistically significant, meaning GOTV call does have an effect on the likelihood of voting in the 1998 election.
 
+\newpage
 ## Problem 2
-#### Part A
+### Part A
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=2.5}
+ggplot(solder,aes(x=factor(Opening),y=skips))+geom_jitter()+stat_summary(fun='mean',color='darkorange')+labs(title="Jitterplot for Opening Size and Number of Skips", x="opening")
+```
+\
+This graph shows the openings of solder gun on the number of skips. The mean skips for the large, medium, and small are 1.53, 3.57, and 11.49, respectively. 
+
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=2.5}
+ggplot(solder, aes(x=factor(Solder),y=skips))+geom_jitter()+stat_summary(fun='mean',color='darkorange')+labs(title="Jitterplot for Solder Thickness and Number of Skips", x="thickness")
+```
+\
+This graph shows the thickness of alloy on solder gun on the number of skips. The mean skips for the Thick and thin alloys openings are 2.904 and 8.156, respectively.
+\
+\
+It can be observed that the means have a visible increase with each change in the categorical variables, showing that the number of skips is likely to be affected by both variables.
+
+### Part B
 ```{r, echo=F, warning=F, message=F}
-ggplot(solder,aes(x=factor(Opening),y=skips))+geom_jitter()+stat_summary(fun='mean',color='darkorange')
-ggplot(solder, aes(x=factor(Solder),y=skips))+geom_jitter()+stat_summary(fun='mean',color='darkorange')
-```
-
-#### Part B
-```{r}
 solder_model=lm(skips~Opening+Solder+Opening:Solder, data=solder)
-confint(solder_model, level=0.95)
+t=data.frame(confint(solder_model, level=0.95))
+t$estimate=coef(solder_model)
+kbl(t)
 ```
 
-#### Part C
-```{r}
+### Part C
+```{r, echo=F, warning=F, message=F}
 coef(solder_model)
 ```
-Using the number of skips of a board with a large opening and thick solder as a base, it can be seen that thick solders with a medium opening have an offset of around 2.4 more skips and a small opening 5.13 more skips. In addition, a large opening with a thin solder has an offset of 2.28 more skips, and a thin solder with medium and small openings have an offset of 0.74 less skips and 9.65 more skips respectively. 
+Using the number of skips (0.393) of a board with a large opening and thick solder as a base, it can be seen that thick solders with a medium opening and small opening in isolation have a main effect of 2.407 and 5.13 respectively, and a thin solder has a main effect of 2.28 in isolation. In addition, the interaction effect of a medium opening and small opening is -0.74 and 9.653 respectively. 
 
-#### D 
-The thin solder with a medium opening is the best recommendation based on the analysis. It can be seen that all boards besides this have a positive offset, meaning the number of skips is greater than that of the base. Since a thin solder and medium opening has the greatest negative offset, it is the best recommendation. 
+
+### Part D 
+```{r, echo=F, warning=F, message=F}
+data = matrix(c(5.52,17.4533,2.8,4.34,0.3933,2.6733), ncol = 3)
+rownames(data) = c("Thick", "Thin")
+colnames(data) = c("S", "M", "L")
+data = as.table(data)
+data
+```
+
+The thick solder with a large opening is the best recommendation based on the analysis. It can be seen from the table above, which added all the offsets, that 0.3933 is the least amount of skips, which is the thick soldr with a large opening. 
 
