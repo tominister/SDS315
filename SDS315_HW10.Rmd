@@ -1,0 +1,124 @@
+---
+title: "SDS315_HW10"
+author: "Tommy Fang EID: hf5829 Repo: https://github.com/tominister/SDS315"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(MatchIt)
+library(mosaic)
+library(kableExtra)
+library(moderndive)
+library(effectsize)
+
+red=read.csv("redlining.csv")
+food=read.csv("groceries.csv")
+```
+
+## Question 1
+The question we are trying to answer is whether or not there is a correlation between FAIR policies and racial/ethnic composition. 
+\
+\
+The approach will be to analyze a plot of fire, age, and income against both the predictor and outcome variables. If there is a noticeable difference, it means that variable is a confounder. Thus, when creating the linear regression model, we add that variable in addition to the predictor against the outcome. 
+\
+\
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=4}
+ggplot(red)+geom_point(aes(x=minority,y=policies))+labs(title="Scatterplot for Minority and Policies", x="Percent Minorities",y="Percent Policy")
+```
+\
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=4}
+ggplot(red)+geom_point(aes(x=fire,y=minority))+labs(title="Scatterplot for Fires and Minority", x="Percent Fire",y="Percent Minority")
+ggplot(red)+geom_point(aes(x=fire,y=policies))+labs(title="Scatterplot for Fires and Policies", x="Percent Fire",y="Percent Policy")
+```
+
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=4}
+ggplot(red)+geom_point(aes(x=age,y=minority))+labs(title="Scatterplot for Age and Minority", x="Age",y="Percent Minority")
+ggplot(red)+geom_point(aes(x=age,y=policies))+labs(title="Scatterplot for Age and Policies", x="Age",y="Percent Policy")
+```
+
+```{r, echo=F, warning=F, message=F, fig.width=6, fig.height=4}
+ggplot(red)+geom_point(aes(x=income,y=minority))+labs(title="Scatterplot for Income and Minority", x="Income (Thousands)",y="Percent Minority")
+ggplot(red)+geom_point(aes(x=income,y=policies))+labs(title="Scatterplot for Income and Policies", x="Income (Thousands)",y="Percent Policy")
+
+red_model=lm(policies~minority+fire+age+income,data=red)
+get_regression_table(red_model, conf.level = 0.95)
+```
+\
+\
+It can be seen from the graphs above, there is a noticeable correlation between each variable against both the predictor and outcome. Even though age has a weak correlation, it can still be said that all three variables are confounders. After adjusting for fire, age, and income, it can be seen that the p-value for the minority offset is 0.006 which is less than 0.05. Thus, it can be said that there is an association between FAIR policies and racial composition. 
+
+
+## Question 2
+#### Part A
+```{r, echo=F, warning=F, message=F}
+grouped_food=food%>%
+  group_by(Store)%>%
+  summarize(avgPrice=mean(Price))
+ggplot(grouped_food)+geom_col(aes(x=avgPrice,y=Store))+labs(title="Bar Graph for Average Price and Store", x="Average Price",y="Store")
+```
+The average price ranges from 2-4 dollars across all stores. It can be observed that Fiesta has the lowest average price and Whole Foods the highest. 
+
+#### Part B
+```{r, echo=F, warning=F, message=F}
+table_products=as.data.frame(table(food$Product))
+ggplot(table_products)+geom_col(aes(x=Freq,y=Var1))+labs(title="Bar Graph for Stores Selling Product and Product", x=" Number of Stores",y="Product")
+```
+It can be seen that there is noticeable variation in the number of stores across the products. Products such as Frosted Flakes 1lb and El Milagros Tortilla Chips have few stores selling while egg and milk cartons have many stores selling. 
+
+#### Part C
+```{r, echo=F, warning=F, message=F}
+food$Type <- factor(food$Type)
+food$Type <- relevel(food$Type, ref = "Grocery")
+
+food_model=lm(Price~Type+Product, data=food)
+conf=confint(food_model,level=0.95)%>%
+  round(2)
+head(conf,5)
+```
+Compared with ordinary grocery stores (like Albertsons, HEB, or Krogers), convenience stores charge somewhere between
+0.41 and 0.92 dollars more for the same product. This be seen in the second row above, which uses a large sample 95% confidence interval. 
+
+#### Part D
+```{r, echo=F, warning=F, message=F}
+food_model2=lm(Price~Store+Product, data=food)
+coefs=coef(food_model2)
+head(coefs,14)
+```
+Comparing to the same product, Kroger Fresh Fare and Walmart have the lowest prices while Wheatsville Food Co-Op and Whole Foods have the highest prices. This can be seen from the magnitude of the offsets above. 
+
+#### Part E
+From the same graph used in part D, it is more likely the possibility that Central Market charges a similar amount to HEB for the same product. The coefficient difference between the two is only around 0.073. This is fairly small compared to many other differences, a few being 0.619 between Walmart and Target and 0.445 between Whole Foods and Natural Grocers. 
+
+
+#### Part F
+```{r, echo=F, warning=F, message=F}
+food$Income10K=food$Income/10000
+food_model3=lm(Price~Income10K+Product, data=food)
+
+table=get_regression_table(food_model3, conf.level = 0.95)
+head(table,2)
+z=standardize_parameters(food_model3)
+head(z,2)
+```
+The slope for Income10K is around -0.014. Since this is negative, consumers in poorer ZIP codes seem to pay more for the same product as a decrease in x (Income) means an increase in y (Price).
+\
+\
+A one-standard deviation increase in the income of a ZIP code seems to be associated with a -0.03 standard-deviation change in the price that consumers in that ZIP code expect to pay for the same product.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
